@@ -1,0 +1,78 @@
+/* NetworkCanvas.css */
+
+.network-canvas-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  background: var(--color-void);
+}
+
+.physics-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* SVG mesh edge lines */
+.mesh-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.mesh-edge {
+  stroke: rgba(0, 212, 255, 0.1);
+  stroke-width: 1;
+  stroke-dasharray: 6 10;
+  stroke-linecap: round;
+  animation: dash-flow 3s linear infinite;
+}
+
+.routing-edge {
+  stroke: rgba(0, 212, 255, 0.25);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 8;
+  animation: dash-flow 1.5s linear infinite;
+}
+
+@keyframes dash-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -28; }
+}
+
+/* Scan line overlay */
+.network-canvas-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 212, 255, 0.015) 2px,
+    rgba(0, 212, 255, 0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Vignette */
+.network-canvas-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(2, 4, 8, 0.7) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}

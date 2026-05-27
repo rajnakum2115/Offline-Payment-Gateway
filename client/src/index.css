@@ -1,0 +1,201 @@
+/* ============================================================
+   ANTIGRAVITY DESIGN SYSTEM
+   Global tokens, reset, typography, keyframes
+   ============================================================ */
+
+/* ── Color Tokens ── */
+:root {
+  /* Void backgrounds */
+  --color-void: #020408;
+  --color-space: #060d1a;
+  --color-deep: #0a1628;
+  --color-surface: #0f1e35;
+
+  /* Neon accents */
+  --color-neon-blue: #00d4ff;
+  --color-neon-blue-dim: #0099cc;
+  --color-neon-purple: #8b5cf6;
+  --color-neon-purple-dim: #6d44c4;
+  --color-neon-pink: #f472b6;
+  --color-neon-pink-dim: #c4568a;
+  --color-neon-green: #00ff88;
+  --color-neon-yellow: #ffd700;
+
+  /* Text */
+  --color-text-primary: #e8f4ff;
+  --color-text-secondary: rgba(232, 244, 255, 0.6);
+  --color-text-muted: rgba(232, 244, 255, 0.3);
+  --color-text-mono: #00d4ff;
+
+  /* Glassmorphism */
+  --color-glass: rgba(6, 13, 26, 0.6);
+  --color-glass-hover: rgba(6, 13, 26, 0.75);
+  --color-glass-border: rgba(0, 212, 255, 0.12);
+  --color-glass-border-hover: rgba(0, 212, 255, 0.3);
+
+  /* Glows */
+  --glow-blue: 0 0 8px rgba(0, 212, 255, 0.8), 0 0 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.2);
+  --glow-purple: 0 0 8px rgba(139, 92, 246, 0.8), 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
+  --glow-pink: 0 0 8px rgba(244, 114, 182, 0.8), 0 0 20px rgba(244, 114, 182, 0.4), 0 0 40px rgba(244, 114, 182, 0.2);
+  --glow-green: 0 0 8px rgba(0, 255, 136, 0.8), 0 0 20px rgba(0, 255, 136, 0.4);
+
+  /* Typography */
+  --font-primary: 'Exo 2', 'Segoe UI', sans-serif;
+  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
+  --font-display: 'Orbitron', 'Exo 2', sans-serif;
+
+  /* Blur */
+  --blur-glass: 18px;
+  --blur-heavy: 30px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--color-void);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Scrollbar Styling ── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.6);
+}
+
+/* ── Typography Utilities ── */
+.font-display {
+  font-family: var(--font-display);
+}
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* ============================================================
+   KEYFRAME ANIMATIONS
+   ============================================================ */
+
+/* Node pulse glow */
+@keyframes pulse-glow-blue {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(0, 212, 255, 0.6), 0 0 16px rgba(0, 212, 255, 0.3), 0 0 32px rgba(0, 212, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(0, 212, 255, 1), 0 0 30px rgba(0, 212, 255, 0.6), 0 0 60px rgba(0, 212, 255, 0.3);
+  }
+}
+
+@keyframes pulse-glow-purple {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(139, 92, 246, 0.6), 0 0 16px rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(139, 92, 246, 1), 0 0 30px rgba(139, 92, 246, 0.6), 0 0 60px rgba(139, 92, 246, 0.3);
+  }
+}
+
+@keyframes pulse-glow-pink {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(244, 114, 182, 0.6), 0 0 16px rgba(244, 114, 182, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(244, 114, 182, 1), 0 0 30px rgba(244, 114, 182, 0.6), 0 0 60px rgba(244, 114, 182, 0.3);
+  }
+}
+
+/* Scanning line sweep */
+@keyframes scan-line {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 0.15; }
+  90% { opacity: 0.15; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* Data stream */
+@keyframes data-stream {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 -200px; }
+}
+
+/* Rotate */
+@keyframes orbit-ring {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Flicker */
+@keyframes flicker {
+  0%, 95%, 100% { opacity: 1; }
+  96% { opacity: 0.7; }
+  97% { opacity: 0.9; }
+  98% { opacity: 0.6; }
+}
+
+/* Float drift */
+@keyframes float-drift {
+  0%, 100% { transform: translateY(0px); }
+  33% { transform: translateY(-6px); }
+  66% { transform: translateY(4px); }
+}
+
+/* Status dot blink */
+@keyframes blink-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* Packet comet trail shimmer */
+@keyframes shimmer {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
