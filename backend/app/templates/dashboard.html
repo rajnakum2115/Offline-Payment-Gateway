@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="UPI Offline Mesh Payment Demo — route payments through a Bluetooth-style mesh network">
+    <title>UPI Offline Mesh — Demo Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Reset & Tokens ─────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg:       #0a0e1a;
+            --surface:  #111827;
+            --surface2: #1f2937;
+            --border:   #2d3748;
+            --text:     #e2e8f0;
+            --text-dim: #94a3b8;
+            --accent:   #6366f1;
+            --accent2:  #818cf8;
+            --green:    #10b981;
+            --green-bg: rgba(16,185,129,.12);
+            --red:      #ef4444;
+            --red-bg:   rgba(239,68,68,.12);
+            --amber:    #f59e0b;
+            --amber-bg: rgba(245,158,11,.12);
+            --blue:     #3b82f6;
+            --blue-bg:  rgba(59,130,246,.12);
+            --cyan:     #06b6d4;
+            --radius:   12px;
+            --radius-sm:8px;
+            --shadow:   0 4px 24px rgba(0,0,0,.4);
+            --font:     'Inter', system-ui, -apple-system, sans-serif;
+            --mono:     'JetBrains Mono', 'Fira Code', monospace;
+        }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* Animated background gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 15% 20%, rgba(99,102,241,.08) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 50% at 85% 80%, rgba(6,182,212,.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Layout ─────────────────────────────────────────── */
+        .container { max-width: 1280px; margin: 0 auto; padding: 24px 20px; position: relative; z-index: 1; }
+        header {
+            text-align: center;
+            padding: 32px 0 24px;
+        }
+        header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent2), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+        header p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            margin-top: 6px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Card ───────────────────────────────────────────── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: border-color .2s;
+        }
+        .card:hover { border-color: rgba(99,102,241,.3); }
+        .card h2 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card h2 .icon { font-size: 1.1rem; }
+
+        /* ── Form ───────────────────────────────────────────── */
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .form-group select:focus,
+        .form-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+        }
+        .form-group select option { background: var(--surface2); }
+
+        /* ── Buttons ────────────────────────────────────────── */
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: var(--font);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,.1), transparent);
+            opacity: 0;
+            transition: opacity .2s;
+        }
+        .btn:hover::after { opacity: 1; }
+        .btn:active { transform: scale(.98); }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+        .btn-inject  { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; }
+        .btn-gossip  { background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; }
+        .btn-bridge  { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+        .btn-reset   { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+        .btn-reset:hover { color: var(--red); border-color: var(--red); }
+
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+
+        /* ── Right Column ───────────────────────────────────── */
+        .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── Mesh Visualisation ──────────────────────────────── */
+        .mesh-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        .device {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            text-align: center;
+            transition: all .3s;
+            position: relative;
+        }
+        .device.has-packet {
+            border-color: var(--accent);
+            box-shadow: 0 0 16px rgba(99,102,241,.15);
+        }
+        .device.is-bridge {
+            border-color: var(--green);
+        }
+        .device.is-bridge.has-packet {
+            box-shadow: 0 0 16px rgba(16,185,129,.2);
+        }
+        .device-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .device-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 99px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .badge-offline { background: var(--red-bg); color: var(--red); }
+        .badge-online  { background: var(--green-bg); color: var(--green); }
+        .device-packets {
+            margin-top: 8px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            font-family: var(--mono);
+            color: var(--accent2);
+        }
+        .device-packets-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        /* Pulse animation for devices with packets */
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,.2); }
+            50%      { box-shadow: 0 0 0 8px rgba(99,102,241,0); }
+        }
+        .device.has-packet { animation: pulse 2s infinite; }
+        .device.is-bridge.has-packet { animation: pulse-green 2s infinite; }
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,.2); }
+            50%      { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+        }
+
+        /* ── Tables ─────────────────────────────────────────── */
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th {
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--text-dim);
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(45,55,72,.5);
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 0.82rem;
+        }
+        tr:hover td { background: rgba(99,102,241,.04); }
+        .amount-cell { font-weight: 600; }
+        .amount-debit  { color: var(--red); }
+        .amount-credit { color: var(--green); }
+
+        /* Status badges */
+        .status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            font-family: var(--font);
+        }
+        .status-settled   { background: var(--green-bg); color: var(--green); }
+        .status-duplicate { background: var(--amber-bg); color: var(--amber); }
+        .status-rejected  { background: var(--red-bg);   color: var(--red); }
+        .status-failed    { background: var(--red-bg);   color: var(--red); }
+
+        /* ── Event Log ──────────────────────────────────────── */
+        .log-container {
+            max-height: 260px;
+            overflow-y: auto;
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            line-height: 1.7;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .log-container::-webkit-scrollbar { width: 6px; }
+        .log-container::-webkit-scrollbar-track { background: transparent; }
+        .log-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(45,55,72,.3);
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-time { color: var(--text-dim); white-space: nowrap; min-width: 70px; }
+        .log-msg { color: var(--text); word-break: break-word; }
+        .log-msg.success { color: var(--green); }
+        .log-msg.error   { color: var(--red); }
+        .log-msg.warn    { color: var(--amber); }
+        .log-msg.info    { color: var(--blue); }
+
+        /* ── Animations ─────────────────────────────────────── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeInUp .4s ease-out both; }
+
+        /* ── Notification toast ──────────────────────────────── */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            box-shadow: var(--shadow);
+            font-size: 0.85rem;
+            min-width: 280px;
+            max-width: 400px;
+            animation: slideIn .3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast.success { border-left: 3px solid var(--green); }
+        .toast.error   { border-left: 3px solid var(--red); }
+        .toast.info    { border-left: 3px solid var(--blue); }
+        .toast.warn    { border-left: 3px solid var(--amber); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ── Step indicators ────────────────────────────────── */
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: var(--accent);
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        /* ── Empty state ────────────────────────────────────── */
+        .empty {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            padding: 32px 16px;
+        }
+        .empty-icon { font-size: 2rem; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📡 UPI Offline Mesh</h1>
+            <p>Payments routed through a Bluetooth-style mesh network — zero connectivity required</p>
+        </header>
+
+        <div class="grid">
+            <!-- ── LEFT: Controls ─────────────────────────────── -->
+            <div class="left-col">
+                <div class="card fade-in" style="animation-delay:.05s">
+                    <h2><span class="icon">💳</span> Compose Payment</h2>
+                    <div class="form-group">
+                        <label for="sender">Sender</label>
+                        <select id="sender">
+                            <option value="alice@upi">Alice (alice@upi)</option>
+                            <option value="bob@upi">Bob (bob@upi)</option>
+                            <option value="charlie@upi">Charlie (charlie@upi)</option>
+                            <option value="dave@upi">Dave (dave@upi)</option>
+                            <option value="bridge@upi">Bridge (bridge@upi)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="receiver">Receiver</label>
+                        <select id="receiver">
+                            <option value="bob@upi">Bob (bob@upi)</option>
+                            <option value="alice@upi">Alice (alice@upi)</option>
+                            <option value="charlie@upi">Charlie (charlie@upi)</option>
+                            <option value="dave@upi">Dave (dave@upi)</option>
+                            <option value="bridge@upi">Bridge (bridge@upi)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Amount (₹)</label>
+                        <input type="number" id="amount" value="500" min="1" max="100000" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="pin">UPI PIN</label>
+                        <input type="password" id="pin" value="1234" maxlength="6" placeholder="4-6 digits">
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-inject" id="btn-inject" onclick="injectPayment()">
+                            <span class="step-badge">1</span>
+                            📤 Inject into Mesh
+                        </button>
+                        <button class="btn btn-gossip" id="btn-gossip" onclick="gossipRound()">
+                            <span class="step-badge">2</span>
+                            🔄 Run Gossip Round
+                        </button>
+                        <button class="btn btn-bridge" id="btn-bridge" onclick="bridgeUpload()">
+                            <span class="step-badge">3</span>
+                            📡 Bridges Upload to Backend
+                        </button>
+                        <button class="btn btn-reset" id="btn-reset" onclick="resetMesh()">
+                            ♻️ Reset Everything
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── RIGHT: Visualisation ───────────────────────── -->
+            <div class="right-col">
+                <!-- Mesh Devices -->
+                <div class="card fade-in" style="animation-delay:.1s">
+                    <h2><span class="icon">📱</span> Mesh Devices</h2>
+                    <div class="mesh-grid" id="mesh-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Account Balances -->
+                <div class="card fade-in" style="animation-delay:.15s">
+                    <h2><span class="icon">🏦</span> Account Balances</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Account</th><th>VPA</th><th>Balance</th></tr>
+                            </thead>
+                            <tbody id="accounts-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Transaction Ledger -->
+                <div class="card fade-in" style="animation-delay:.2s">
+                    <h2><span class="icon">📒</span> Transaction Ledger</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Time</th><th>Sender</th><th>Receiver</th><th>Amount</th><th>Status</th><th>Hash</th></tr>
+                            </thead>
+                            <tbody id="tx-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                        <div class="empty" id="tx-empty">
+                            <div class="empty-icon">📭</div>
+                            No transactions yet — inject a payment to get started
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Log -->
+                <div class="card fade-in" style="animation-delay:.25s">
+                    <h2><span class="icon">📋</span> Event Log</h2>
+                    <div class="log-container" id="log-container">
+                        <div class="log-entry">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-msg info">Dashboard loaded. Ready to demo.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // ── Helpers ──────────────────────────────────────────
+        const $ = id => document.getElementById(id);
+        const API = path => fetch(path);
+        const POST = (path, body) => fetch(path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+
+        function formatINR(paise) {
+            return '₹' + (paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function timeStr() {
+            return new Date().toLocaleTimeString('en-GB');
+        }
+
+        function shortHash(h) {
+            return h ? h.substring(0, 12) + '…' : '—';
+        }
+
+        // ── Toast notifications ──────────────────────────────
+        function toast(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `toast ${type}`;
+            const icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
+            div.innerHTML = `<span>${icons[type] || ''}</span><span>${msg}</span>`;
+            $('toast-container').appendChild(div);
+            setTimeout(() => { div.style.opacity = '0'; div.style.transform = 'translateX(40px)'; setTimeout(() => div.remove(), 300); }, 4000);
+        }
+
+        // ── Event log ────────────────────────────────────────
+        function log(msg, cls = '') {
+            const container = $('log-container');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">${timeStr()}</span><span class="log-msg ${cls}">${msg}</span>`;
+            container.prepend(entry);
+            // Keep max 50 entries
+            while (container.children.length > 50) container.lastChild.remove();
+        }
+
+        // ── Render functions ─────────────────────────────────
+        function renderMesh(devices) {
+            const grid = $('mesh-grid');
+            grid.innerHTML = '';
+            devices.forEach(d => {
+                const hasPkt = d.packet_count > 0;
+                const cls = [
+                    'device',
+                    d.has_internet ? 'is-bridge' : '',
+                    hasPkt ? 'has-packet' : '',
+                ].join(' ');
+                grid.innerHTML += `
+                    <div class="${cls}">
+                        <div class="device-name">${d.name}</div>
+                        <span class="device-badge ${d.has_internet ? 'badge-online' : 'badge-offline'}">
+                            ${d.has_internet ? '🌐 Online' : '📵 Offline'}
+                        </span>
+                        <div class="device-packets">${d.packet_count}</div>
+                        <div class="device-packets-label">packets</div>
+                    </div>`;
+            });
+        }
+
+        function renderAccounts(accounts) {
+            const body = $('accounts-body');
+            body.innerHTML = '';
+            accounts.forEach(a => {
+                body.innerHTML += `
+                    <tr>
+                        <td style="font-family:var(--font);font-weight:600">${a.name}</td>
+                        <td>${a.vpa}</td>
+                        <td class="amount-cell">${formatINR(a.balance)}</td>
+                    </tr>`;
+            });
+        }
+
+        function renderTransactions(txns) {
+            const body = $('tx-body');
+            const empty = $('tx-empty');
+            body.innerHTML = '';
+            if (!txns || txns.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            txns.forEach(t => {
+                const statusCls = 'status-' + t.status.toLowerCase();
+                const time = t.settled_at ? new Date(t.settled_at).toLocaleTimeString('en-GB') : '—';
+                body.innerHTML += `
+                    <tr>
+                        <td>${time}</td>
+                        <td>${t.sender_vpa}</td>
+                        <td>${t.receiver_vpa}</td>
+                        <td class="amount-cell">${formatINR(t.amount)}</td>
+                        <td><span class="status ${statusCls}">${t.status}</span></td>
+                        <td title="${t.ciphertext_hash}">${shortHash(t.ciphertext_hash)}</td>
+                    </tr>`;
+            });
+        }
+
+        // ── API calls ────────────────────────────────────────
+        async function refreshAll() {
+            try {
+                const [meshRes, accRes, txRes] = await Promise.all([
+                    API('/api/mesh/status'), API('/api/accounts'), API('/api/transactions'),
+                ]);
+                const mesh = await meshRes.json();
+                const acc  = await accRes.json();
+                const tx   = await txRes.json();
+                renderMesh(mesh.devices);
+                renderAccounts(acc.accounts);
+                renderTransactions(tx.transactions);
+            } catch (e) {
+                log('Failed to refresh: ' + e.message, 'error');
+            }
+        }
+
+        async function injectPayment() {
+            const btn = $('btn-inject');
+            btn.disabled = true;
+            try {
+                const res = await POST('/api/payment/inject', {
+                    sender_vpa:   $('sender').value,
+                    receiver_vpa: $('receiver').value,
+                    amount:       parseFloat($('amount').value),
+                    pin:          $('pin').value,
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    toast(data.error || 'Injection failed', 'error');
+                    log(`❌ Inject failed: ${data.error}`, 'error');
+                    return;
+                }
+                toast(`Payment injected! ${data.payment_summary.sender} → ${data.payment_summary.receiver} for ₹${data.payment_summary.amount_rupees}`, 'success');
+                log(`📤 Injected: ${data.payment_summary.sender} → ${data.payment_summary.receiver} ₹${data.payment_summary.amount_rupees} [nonce=${data.payment_summary.nonce.substring(0,8)}…]`, 'success');
+                renderMesh(data.mesh);
+                await refreshAll();
+            } catch (e) {
+                toast('Network error: ' + e.message, 'error');
+                log('❌ Network error: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function gossipRound() {
+            const btn = $('btn-gossip');
+            btn.disabled = true;
+            try {
+                const res = await POST('/api/mesh/gossip');
+                const data = await res.json();
+                toast(data.message, 'info');
+                log(`🔄 ${data.message}`, 'info');
+                renderMesh(data.gossip.devices);
+            } catch (e) {
+                toast('Gossip failed: ' + e.message, 'error');
+                log('❌ Gossip error: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function bridgeUpload() {
+            const btn = $('btn-bridge');
+            btn.disabled = true;
+            try {
+                const res = await POST('/api/bridge/ingest');
+                const data = await res.json();
+
+                if (!data.results || data.results.length === 0) {
+                    toast('No packets on bridge devices', 'warn');
+                    log('⚠️ Bridge has no packets to upload', 'warn');
+                    return;
+                }
+
+                data.results.forEach(r => {
+                    if (r.status === 'SETTLED') {
+                        toast(`Settled! ${r.payment.sender} → ${r.payment.receiver} for ${formatINR(r.payment.amount)}`, 'success');
+                        log(`✅ SETTLED: ${r.payment.sender} → ${r.payment.receiver} ${formatINR(r.payment.amount)} [hash=${shortHash(r.ciphertext_hash)}]`, 'success');
+                    } else if (r.status === 'DUPLICATE') {
+                        toast(`Duplicate packet rejected [${shortHash(r.ciphertext_hash)}]`, 'warn');
+                        log(`⚠️ DUPLICATE: packet ${shortHash(r.ciphertext_hash)} already settled`, 'warn');
+                    } else {
+                        toast(`Rejected: ${r.message}`, 'error');
+                        log(`❌ ${r.status}: ${r.message}`, 'error');
+                    }
+                });
+
+                if (data.accounts) renderAccounts(data.accounts);
+                if (data.transactions) renderTransactions(data.transactions);
+                await refreshAll();
+            } catch (e) {
+                toast('Bridge upload failed: ' + e.message, 'error');
+                log('❌ Bridge error: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function resetMesh() {
+            const btn = $('btn-reset');
+            btn.disabled = true;
+            try {
+                const res = await POST('/api/mesh/reset');
+                const data = await res.json();
+                toast('Everything reset — fresh start!', 'info');
+                log('♻️ Mesh, idempotency cache, and database reset', 'info');
+                renderMesh(data.mesh);
+                if (data.accounts) renderAccounts(data.accounts);
+                renderTransactions([]);
+            } catch (e) {
+                toast('Reset failed: ' + e.message, 'error');
+                log('❌ Reset error: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ── Init ─────────────────────────────────────────────
+        refreshAll();
+    </script>
+</body>
+</html>
